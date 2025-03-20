@@ -13,9 +13,10 @@ class ConfirmablePasswordController extends Controller
     /**
      * Show the confirm password view.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\View\View
      */
-    public function show()
+    public function show(Request $request)
     {
         return view('auth.confirm-password');
     }
@@ -28,6 +29,10 @@ class ConfirmablePasswordController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
         if (! Auth::guard('web')->validate([
             'email' => $request->user()->email,
             'password' => $request->password,
@@ -39,6 +44,16 @@ class ConfirmablePasswordController extends Controller
 
         $request->session()->put('auth.password_confirmed_at', time());
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        return redirect()->intended($request->input('redirect', RouteServiceProvider::HOME));
+    }
+    
+    /**
+     * Password confirmation timeout.
+     *
+     * @return int
+     */
+    protected function passwordConfirmationTimeout()
+    {
+        return config('auth.password_timeout', 10800);
     }
 }
