@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,11 +29,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(RouteServiceProvider::HOME);
+        try {
+            $request->authenticate();
+            
+            $request->session()->regenerate();
+            
+            return redirect()->intended(RouteServiceProvider::HOME);
+        } catch (ValidationException $e) {
+            return back()->withErrors([
+                'email' => $e->getMessage(),
+            ])->withInput($request->except('password'));
+        }
     }
 
     /**
@@ -49,6 +56,18 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('status', 'You have been logged out successfully');
+    }
+    
+    /**
+     * Display user profile.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function profile()
+    {
+        return view('auth.profile', [
+            'user' => Auth::user()
+        ]);
     }
 }
