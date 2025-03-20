@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
+use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
 
 class NewPasswordController extends Controller
 {
@@ -18,7 +21,7 @@ class NewPasswordController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\View\View
      */
-    public function create(Request $request)
+    public function create(Request $request): View
     {
         return view('auth.reset-password', ['request' => $request]);
     }
@@ -31,7 +34,7 @@ class NewPasswordController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'token' => ['required'],
